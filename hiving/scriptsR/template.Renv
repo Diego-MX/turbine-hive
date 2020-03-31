@@ -1,0 +1,7 @@
+# Variables de R
+R_ENVIRON_USER=un_usuario
+R_DEFAULT_PACKAGES='datasets,utils,grDevices,graphics,stats,methods,tidyverse,lubridate,feather,lazyeval,magrittr,glue'
+
+# Variables de Google Cloud
+CLOUD_PROJECT=nuestro_proyecto
+CLOUD_PROJ_ID=su_numero_de_id
