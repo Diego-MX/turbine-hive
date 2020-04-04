@@ -1,11 +1,12 @@
-
 # Diego Villamil, Turbine
 # CDMX, 27 de marzo de 2020
-
 
 # Preparación -----------------------------------------
 
 library(readxl)
+# library(DBI)
+library(RPostgres)
+
 
 char2regex <- function (x) 
     str_c(x, collapse="|") %>% sprintf("(%s)", .) 
@@ -14,18 +15,22 @@ char2regex <- function (x)
 # Funciones -------------------------------------------
 
 conectar_postgres <- function (...) {
-  conn <- dbConnect(ODBC())
+  conn <- dbConnect(Postgres(), 
+    dbname = Sys.getenv("PSQL_DBNAME"), 
+    host   = Sys.getenv("PSQL_HOST"), 
+    user   = Sys.getenv("PSQL_USER"),
+    password = Sys.getenv("PSQL_PASS"), ... )
   return (conn)
 }
 
 
 tm_leer_archivo <- function (direccion, fuente="la_paz") {
-  
 switch (fuente, 
 la_paz = {          
   
   ## 0. Obtener meta informacion del archivo. 
-  tm_obj <- list(general = NA, canales = NA, registros = NA)
+  tm_obj <- list(archivo = archivo, general = NA, 
+                 canales = NA, registros = NA)
   
   claves <- c("SDR", "Logger Info", "Site Info", 
               "Sensor Info", "Channel", "Date & Time") 
@@ -130,26 +135,39 @@ la_paz = {
   
 
 
-tm_ajustar_general <- function (obj_tm, direccion, fuente="lapaz") {
+tm_ajustar_objeto <- function (obj_tm, fuente="lapaz") {
 switch (fuente, 
 lapaz = {
   lapaz_regex <- "(TM.{1,2}) ([0-9]{8})-([0-9]{8}).xlsx"
-  info_nombres <- c("name", "tm", "start_date", "end_date")
+  info_nombres <- c("filename", "tm", "start_date", "end_date")
   
-  tm_info <- basename(direccion) %>% 
+  tm_info <- basename(obj_tm[["archivo"]]) %>% 
     str_match(lapaz_regex) %>% as.vector() %>% 
     set_names(info_nombres)
     
   # Usar MUTATE_AT
   general_mod <- obj_tm[["general"]] %>% 
-    mutate(tm  =  tm_info["tm"], 
-        name   =  tm_info["name"], 
-        end_date = tm_info["end_date"], 
-        start_date = tm_info["start_date"]) %>% 
-    mutate_at(ends_with("date"), ymd)
+    mutate(filename = tm_info["filename"], 
+        tm          = tm_info["tm"], 
+        start_date  = tm_info["start_date"], 
+        end_date    = tm_info["end_date"]) %>% 
+    mutate_at(c("start_date", "end_date"), ymd) %>% 
+    mutate(Desc = glue("{`Project Desc`} / {`Site Desc`}"))
   
-  tm_obj$general <- general_mod
-  return (tm_obj)
+  canales_0 <- obj_tm[["registros"]][["canal"]] %>% unique()
+  canales_mod <- obj_tm[["canales"]] %>% 
+    filter(`Channel #` %in% canales_0) %>% 
+    mutate(measure_desc = general_mod$`Desc`[1]) %>% 
+    mutate_at("Serial Number", ~if_else(is.na(.), 
+          glue("{measure_desc} / {Description}"), .)) 
+  
+  registros_mod <- obj_tm[["registros"]] %>% 
+    mutate(canal = canales_mod$`Serial Number`[canal])
+  
+  new_tm <- list(general = general_mod, 
+                 canales = canales_mod, 
+                 registros = registros_mod)
+  return (new_tm)
 })}
 
 

@@ -12,9 +12,11 @@ lapaz_psql <- conectar_postgres("mediciones")
 lapaz_dir <- "../data/raw/wind_data/Mesa La Paz" 
   
 
+archivo <- list.files(lapaz_dir, full=TRUE)[1]
 for (archivo in lapaz_dir %>% list.files(full=TRUE) ) {
-  tm_obj <- tm_leer_archivo(archivo, "lapaz") 
-  tm_obj <- tm_ajustar_general(tm_obj, c_fila[["direccion"]])
+  tm_obj <- tm_leer_archivo(archivo, "la_paz") 
+  tm_obj <- tm_ajustar_objeto(tm_obj)
   tm_subir_sql(tm_obj, lapaz_sql, "lapaz")
+  
 }
 
