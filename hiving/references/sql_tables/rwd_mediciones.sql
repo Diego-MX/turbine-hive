@@ -2,10 +2,6 @@
 CREATE TABLE rwd_general(
   id            SERIAL,
   description   CHAR(50),
-  filename      CHAR(50),
-  tm            CHAR(20),
-  start_date    DATE,
-  end_date      DATE,
   sdr           CHAR(20),
   model_num     INTEGER,
   serial_num    INTEGER,
@@ -19,37 +15,43 @@ CREATE TABLE rwd_general(
   site_lat_chr  CHAR(20),
   site_lon_chr  CHAR(20),
   time_offset   INTEGER,
+  filename      CHAR(50),
+  start_date    DATE,
+  end_date      DATE,
+  tm_file       CHAR(20),
   PRIMARY KEY(id)
 );
 
 CREATE TABLE rwd_channels(
   id              SERIAL,
-  measure_desc    INTEGER, 
+  measure_desc    CHAR(50), 
   channel_type    INTEGER,
   channel_desc    CHAR(50),
   details         CHAR(100),
   serial_num      INTEGER,
-  height          INTEGER,
+  height          NUMERIC,
   scale_fct       NUMERIC,
   channel_offset  NUMERIC,
   units           CHAR(20),
-  measure_id      INTEGER
-  PRIMARY KEY(id), 
-  FOREIGN KEY(measure_id) REFERENCES rwd_general(id)
+  measure_serial  INTEGER,
+  warnings        CHAR(100),
+  PRIMARY KEY(id) --, 
+  --FOREIGN KEY(measur--e_serial) REFERENCES rwd_general(serial_num)
 );
 
 CREATE TABLE rwd_records(
   id              BIGSERIAL,
-  channel_serial  INTEGER, 
-  measure_desc    INTEGER, 
+  channel_serial  CHAR(50), 
+  measure_desc    CHAR(50), 
   record_ts       TIMESTAMP,
   record_len      INTEGER, 
   record_avg      NUMERIC,
   record_sd       NUMERIC,
   record_min      NUMERIC,
   record_max      NUMERIC,
-  PRIMARY KEY(id),
-  FOREIGN KEY(channel_id) REFERENCES rwd_channels(id),
-  FOREIGN KEY(measure_id) REFERENCES rwd_general(id)
+  measure_serial  CHAR(50),
+  PRIMARY KEY(id) -- ,
+  --FOREIGN KEY(channel_serial) REFERENCES rwd_channels(serial_num),
+  --FOREIGN KEY(measure_serial) REFERENCES rwd_general(serial_num)
 );
 
