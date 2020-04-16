@@ -1,3 +1,5 @@
 *
 !.gitignore
-!wind_data
+!/wind_data/
+!/lapaz_keep/
+

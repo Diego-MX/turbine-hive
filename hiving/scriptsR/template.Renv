@@ -1,7 +1,14 @@
 # Variables de R
-R_ENVIRON_USER=un_usuario
+R_ENVIRON_USER=diego
 R_DEFAULT_PACKAGES='datasets,utils,grDevices,graphics,stats,methods,tidyverse,lubridate,feather,lazyeval,magrittr,glue'
 
 # Variables de Google Cloud
-CLOUD_PROJECT=nuestro_proyecto
-CLOUD_PROJ_ID=su_numero_de_id
+CLOUD_PROJECT=el proyecto
+CLOUD_PROJ_ID=el id del proyecto
+
+
+# Postgres 
+PSQL_HOST=a_host
+PSQL_DBNAME=a_database
+PSQL_USER=a_user
+PSQL_PASS=a_password
