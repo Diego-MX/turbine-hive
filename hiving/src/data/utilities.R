@@ -209,13 +209,13 @@ tm_subir_sql <- function (obj_tm, conn, fuente="lapaz") {
 switch (fuente, 
 lapaz = {
   # OBJ_TM cuenta con 3 campos: GENERAL, CANALES, REGISTROS.
-  "\tCargando renglón general.\n" %>% cat()
+  message("\tCargando renglón general.") 
   dbWriteTable(conn, "rwd_general",  obj_tm$general, append = TRUE)
   
-  "\tCargando renglón channels.\n" %>% cat()
+  message("\tCargando renglón channels.\n")
   dbWriteTable(conn, "rwd_channels", obj_tm$channels, append = TRUE)
   
-  "\tCargando renglón records.\n" %>% cat()
+  message("\tCargando renglón records.\n")
   dbWriteTable(conn, "rwd_records",  obj_tm$records, append = TRUE)
 })
 }
