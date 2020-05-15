@@ -5,6 +5,7 @@
 source("../src/data/utilities.R")
 
 registros_file <- "../data/interim/lapaz"
+analisis <- FALSE
 
 if (registros_file %>% file.exists() %>% not()) {
   conn <- conectar_postgres("mediciones") 
@@ -55,89 +56,92 @@ registros_0 <- registros %>%
 
 # Graficas de registros ---------------------------------------------------
 
-reg_mensual <- registros_0 %>% 
-  mutate(fecha_mes = floor_date(record_ts, "month")) %>% 
-  group_by(fecha_mes, channel_serial) %>% 
-  summarize(n_cuenta = n(), 
-            record_avg = mean(record_avg)) %>% 
-  inner_join(canales_0, by = c("channel_serial" = "channel_by")) %>% 
-  mutate_at("channel_serial", . %>% str_replace_all(" / ", "\n"))
-
-gg_mensual <- reg_mensual %>% 
-    ggplot(aes(fecha_mes, record_avg, color = channel_serial)) +
-    facet_wrap(~measure_desc, scales = "free_y") +
-    geom_line() + 
-    labs(x = NULL, y = NULL) + 
-    theme(axis.text.x = element_text(angle = 45, hjust = 1), 
-        legend.position = "bottom") + 
-    guides(color = guide_legend(nrow=6,byrow=TRUE))
-
-print(gg_mensual)
-
-ggsave(plot = gg_mensual, height = 9, width = 16, dpi = 100, 
-    "../reports/figures/lapaz/velocidad mensual.png")  
-
-gg_torre_sur <- reg_mensual %>% 
-  filter(str_detect(measure_desc, "Sur"), 
-         channel_serial != "0") %>% 
-  ggplot(aes(fecha_mes, record_avg, color = channel_serial)) +
-    facet_wrap(~channel_serial) +
-    geom_line() + 
-    labs(x = NULL, y = NULL) + 
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-    guides(color = guide_legend(nrow=6,byrow=TRUE))
-    
-print(gg_torre_sur)
-
-
-
-# Experimetno de dependientes --------------------------------
-
-registros_diarios <- registros_0 %>% 
-  mutate(date_record = as.Date(record_ts), 
-        record_hr = hour(record_ts), 
-        is_12 = record_hr == 12, is_18 = record_hr == 18) %>% 
-  group_by(date_record) %>% 
-  summarize(n_records  = n(), 
-        n_channels = n_distinct(channel_serial), 
-        stdev_rcrd = sd(record_avg), 
-        record_avg = mean(record_avg), 
-        record_max = max(record_avg), 
-        record_12  = sum(record_avg*is_12)/sum(is_12),
-        record_18  = sum(record_avg*is_18)/sum(is_18)) %>% 
-  ungroup()
-
-gg_stats <- registros_diarios %>% 
-  select(date_record, n_records, n_channels, stdev_rcrd) %>% 
-  gather("stat", "value", -date_record) %>% 
-  ggplot(aes(date_record, value, color = stat)) + 
-    facet_wrap(~ stat, scales = "free_y") +
-    geom_line()
-
-print(gg_stats)
-
-ggsave(plot = gg_stats, height = 9, width = 16, dpi = 100, 
-       "../reports/figures/lapaz/stats_diaria.png")
-
-
-gg_diarios <- registros_diarios %>% 
-  select(date_record, starts_with("record")) %>% 
-  gather("tipo", "velocidad", starts_with("record"), na.rm = TRUE) %>% 
-  mutate_at("tipo", ~str_replace(., "record_", "")) %>% 
-  ggplot(aes(date_record, velocidad, color = tipo)) + 
-    geom_line() 
-
-print(gg_diarios)
-
-ggsave(plot = gg_diarios, height = 9, width = 16, dpi = 100, 
-  "../reports/figures/lapaz/velocidad_diaria.png")
+if (analisis) {
+  reg_mensual <- registros_0 %>% 
+    mutate(fecha_mes = floor_date(record_ts, "month")) %>% 
+    group_by(fecha_mes, channel_serial) %>% 
+    summarize(n_cuenta = n(), 
+              record_avg = mean(record_avg)) %>% 
+    inner_join(canales_0, by = c("channel_serial" = "channel_by")) %>% 
+    mutate_at("channel_serial", . %>% str_replace_all(" / ", "\n"))
   
+  gg_mensual <- reg_mensual %>% 
+      ggplot(aes(fecha_mes, record_avg, color = channel_serial)) +
+      facet_wrap(~measure_desc, scales = "free_y") +
+      geom_line() + 
+      labs(x = NULL, y = NULL) + 
+      theme(axis.text.x = element_text(angle = 45, hjust = 1), 
+          legend.position = "bottom") + 
+      guides(color = guide_legend(nrow=6,byrow=TRUE))
+  
+  print(gg_mensual)
+  
+  ggsave(plot = gg_mensual, height = 9, width = 16, dpi = 100, 
+      "../reports/figures/lapaz/velocidad mensual.png")  
+  
+  gg_torre_sur <- reg_mensual %>% 
+    filter(str_detect(measure_desc, "Sur"), 
+           channel_serial != "0") %>% 
+    ggplot(aes(fecha_mes, record_avg, color = channel_serial)) +
+      facet_wrap(~channel_serial) +
+      geom_line() + 
+      labs(x = NULL, y = NULL) + 
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+      guides(color = guide_legend(nrow=6,byrow=TRUE))
+      
+  print(gg_torre_sur)
+}
 
 
-# Una torre de medicion ---------------------------------------------------
+# Experimetno de dependientes diario ---------------------------
+
+if (analisis) {
+  registros_diarios <- registros_0 %>% 
+    mutate(date_record = as.Date(record_ts), 
+          record_hr = hour(record_ts), 
+          is_12 = record_hr == 12, is_18 = record_hr == 18) %>% 
+    group_by(date_record) %>% 
+    summarize(n_records  = n(), 
+          n_channels = n_distinct(channel_serial), 
+          stdev_rcrd = sd(record_avg), 
+          record_avg = mean(record_avg), 
+          record_max = max(record_avg), 
+          record_12  = sum(record_avg*is_12)/sum(is_12),
+          record_18  = sum(record_avg*is_18)/sum(is_18)) %>% 
+    ungroup()
+  
+  gg_stats <- registros_diarios %>% 
+    select(date_record, n_records, n_channels, stdev_rcrd) %>% 
+    gather("stat", "value", -date_record) %>% 
+    ggplot(aes(date_record, value, color = stat)) + 
+      facet_wrap(~ stat, scales = "free_y") +
+      geom_line()
+  
+  print(gg_stats)
+  
+  ggsave(plot = gg_stats, height = 9, width = 16, dpi = 100, 
+         "../reports/figures/lapaz/stats_diaria.png")
+  
+  
+  gg_diarios <- registros_diarios %>% 
+    select(date_record, starts_with("record")) %>% 
+    gather("tipo", "velocidad", starts_with("record"), na.rm = TRUE) %>% 
+    mutate_at("tipo", ~str_replace(., "record_", "")) %>% 
+    ggplot(aes(date_record, velocidad, color = tipo)) + 
+      geom_line() 
+  
+  print(gg_diarios)
+  
+  ggsave(plot = gg_diarios, height = 9, width = 16, dpi = 100, 
+    "../reports/figures/lapaz/velocidad_diaria.png")
+}
+
+
+# Una torre y agregado por hora ------------------------------------------------
 
 
 # Tomamos las torres 105060, 15406 (a 40 mts altura)
+
 
 reg_main_channels <- registros_0 %>% 
   select(channel_serial, rec = record_avg, record_ts) %>% {
@@ -147,37 +151,15 @@ reg_main_channels <- registros_0 %>%
   } %>% 
   mutate(wind_speed = coalesce(rec_105060, rec_15406), 
          wind_channel = if_else(!is.na(rec_105060), "105060", "15406")) %>% 
-  select(-starts_with("rec_1"))
+  select(-starts_with("rec_1")) 
 
-gg_torre_105060 <- reg_main_channels %>% 
-  mutate(rec_hr = floor_date(record_ts, "hour"))
-  ggplot(aes(record_ts, wind_speed)) +
-      geom_line()
-  
-print(gg_torre_105060)
+write_feather(reg_main_channels, "../data/explore/lapaz_wind.feather")
 
-
-# Para la tendencia anual, calculamos el promedio sobre todos los años, 
-# Y con una ventana de 7 dias. 
-
-tendencia_anual <- reg_main_channels %>% 
-  arrange(record_ts) %>% 
-  mutate(year)
-  
+# Pasamos a otro script para analizar tendencias. 
 
 
 
 
-get.mav <- function (bp, n=2) {
-  require (zoo)
-  if (is.na(bp[1])) 
-    bp[1] <- mean(bp, na.rm=TRUE)
-  bp <- na.locf(bp, na.rm=FALSE)
-  if (length(bp) < n) 
-    return (bp)
-  c(bp[1:(n-1)], rollapply(bp, width=n, mean, align="right"))  
-}
-test <- with(test, test[order(ID, YEAR_VISIT), ])
 
 
 
