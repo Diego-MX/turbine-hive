@@ -4,12 +4,10 @@
 # Preparación -----------------------------------------
 
 library(readxl)
-# library(DBI)
 library(RPostgres)
 
 
-char2regex <- function (x) 
-    str_c(x, collapse="|") %>% sprintf("(%s)", .) 
+char2regex <- function (x) str_c(x, collapse="|") %>% sprintf("(%s)", .) 
 
 
 # Funciones -------------------------------------------
@@ -38,11 +36,10 @@ lapaz = {
   
   two_cols <- c("...1", "...2")
   crudisimo <- read_excel(direccion, 
-      col_names=two_cols, col_types="text", 
-      range="A1:B500")
+      col_names=two_cols, col_types="text", range="A1:B500")
   
   filas <- crudisimo$...1 %>% { tibble(
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      indice = str_which(., claves_regex), 
+      indice = str_which(., claves_regex), 
       nombre = str_subset(., claves_regex), 
       clave  = str_extract(., claves_regex)[indice]
   )}
@@ -81,15 +78,14 @@ lapaz = {
   info_general <- info_general_ %>% 
     spread(...1, ...2) %>% 
     select_at(cols_general) %>% 
-    mutate_at("Site Elevation", 
-        ~str_replace(., "m", "") %>% as.numeric())
+    mutate_at("Site Elevation", ~str_replace(., "m", "") %>% as.numeric())
   tm_obj[["general"]] <- info_general
   
   
   # 2. Información de los canales
   k_infos <- diff(indices$Channel) 
   if (n_distinct(k_infos) == 1) {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    k_info <- unique(k_infos) 
+    k_info <- unique(k_infos) 
     n_canales <- length(indices$Channel)
   } else {
     warning ("Distancias entre canales debe ser igual")
@@ -129,9 +125,9 @@ lapaz = {
     separate(aux, c("channel", "aux_stat")) %>% 
     mutate_at("channel", 
         ~str_replace(., "CH", "") %>% as.numeric()) %>% 
-    spread(aux_stat, value, fill = NA) %>% 
+    spread(aux_stat, value, fill=NA) %>% 
     select(`Date & Time Stamp`, record_len, channel, 
-        record_avg=Avg, record_sd=SD, record_min=Min, record_max=Max)
+        record_avg = Avg, record_sd = SD, record_min = Min, record_max = Max)
   
   tm_obj[["registros"]] <- registros
   
@@ -183,7 +179,7 @@ lapaz = {
   
   registros_mod <- canales_mod_ %>% 
     select(channel_serial = serial_num, chn_join = `Channel #`) %>% 
-    right_join(by = c("chn_join" = "channel"), 
+    right_join(by=c("chn_join" = "channel"), 
         obj_tm[["registros"]]) %>% select(-chn_join) %>% 
     mutate(measure_serial = general_mod$serial_num, 
           measure_desc = general_mod$description) %>% 
@@ -210,13 +206,13 @@ switch (fuente,
 lapaz = {
   # OBJ_TM cuenta con 3 campos: GENERAL, CANALES, REGISTROS.
   message("\tCargando renglón general.") 
-  dbWriteTable(conn, "rwd_general",  obj_tm$general, append = TRUE)
+  dbWriteTable(conn, "rwd_general",  obj_tm$general, append=TRUE)
   
   message("\tCargando renglón channels.\n")
-  dbWriteTable(conn, "rwd_channels", obj_tm$channels, append = TRUE)
+  dbWriteTable(conn, "rwd_channels", obj_tm$channels, append=TRUE)
   
   message("\tCargando renglón records.\n")
-  dbWriteTable(conn, "rwd_records",  obj_tm$records, append = TRUE)
+  dbWriteTable(conn, "rwd_records",  obj_tm$records, append=TRUE)
 })
 }
   

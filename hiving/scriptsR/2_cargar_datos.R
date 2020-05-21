@@ -16,8 +16,10 @@ for (archivo in lapaz_dir %>% list.files(full=TRUE) ) {
   
   message ("Procesando archivo: %s\n" %>% sprintf(archivo))
   tm_obj_0 <- tm_leer_archivo(archivo, "lapaz") 
-  tm_obj <- tm_ajustar_objeto(tm_obj, "lapaz")
+  tm_obj <- tm_ajustar_objeto(tm_obj_0, "lapaz")
   tm_subir_sql(tm_obj, conn, "lapaz")
 
 }
+
+dbDisconnect(conn)
 

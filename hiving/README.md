@@ -1,13 +1,49 @@
 hiving
 ==============================
 
-Vamos a predecir el clima para que las compañías eólicas nos paguen. 
+Vamos a predecir el clima para venderles predicciones de Big Data a las compañías eólicas. 
 
-Project Organization
+# Prerrequisitos
+
+Los prerrequisistos para utilizar este paquete son: 
+- R y RStudio
+- Python todavía no, pero pronto... y a través de Anaconda. 
+- Postgres
+- Google Cloud Platform tal vez, ya que de momento se usa aparte
+
+## R y RStudio
+
+Después de instalarlos, hay que hacer la siguiente configuración. 
+1. Instala los siguientes paquetes con la instrucción `> install.packages("paquete")`:
+    - `tidyverse`
+    - `lubridate`
+    - `feather`
+    - `lazyeval`
+    - `magrittr`
+    - `glue`
+    - `readxl`
+    - `RPostgres`
+    - ... otros que vayan surgiendo en los módulos
+
+2. Activa archivos de variables de ambiente:
+    - Abre `scriptsR\template.Renv` y sigue esas instrucciones.
+    - Todavía no usamos `template.env` para otras variables fuera de R. 
+
+3. Abre el archivo `scriptsR\hiving.Rproj` con RStudio y verifica que funcionen...
+    - `> Sys.getenv("PSQL_HOST")`
+    - `> conexion <- conectar_postgres("mediciones")` 
+
+4. Seguimos con el análisis. 
+
+
+# Organización
+
+Los fólders y archivos en este proyecto siguen tienen la organización de `cookicutter` para Python.  
+Y algunas modificaciones para integrar el análisis de R. 
+
 ------------
 
     ├── LICENSE
-    ├── Makefile           <- Makefile with commands like `make data` or `make train`
     ├── README.md          <- The top-level README for developers using this project.
     ├── data
     │   ├── external       <- Data from third party sources.
@@ -30,7 +66,7 @@ Project Organization
     │
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
-    │
+    |
     ├── setup.py           <- makes project pip installable (pip install -e .) so src can be imported
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module

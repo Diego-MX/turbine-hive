@@ -1,0 +1,9 @@
+{
+  "files.exclude": {
+    "**/.directory": true,
+    "**/.vscode": true,
+    "**/LICENSE": true,
+    "**/Makefile": true,
+    "**/tox.ini": true
+  }
+}

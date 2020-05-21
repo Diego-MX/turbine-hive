@@ -2,3 +2,4 @@
 .Rhistory
 .Renviron
 .Rproj.user
+packrat/lib*/
